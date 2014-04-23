@@ -60,6 +60,7 @@ k1=2000; n=4000
 set.seed(ii)
 
 y=generate.data(intensity=c(l0,l1,l2,l3),proportion=c(p1,p2,p3))
+write.table(y, file='y.dat', row.names=FALSE, col.names=FALSE) 
 write.matrix(y,file = "y.dat", sep = " ", blocksize)
 stop()
 apply(y,1,sum)
