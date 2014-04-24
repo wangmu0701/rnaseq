@@ -64,9 +64,15 @@ return(-tmp)
 
 initialization=function(range){
 l=pi=matrix(0,nrow=NT,ncol=2)
-l[,1]=runif(NT,min(range),max(range))
-l[,2]=runif(1,0.2,1)
-pi[,1]=runif(NT,0.2,1)
+#l[,1]=runif(NT,min(range),max(range))
+#l[,2]=runif(1,0.2,1)
+#pi[,1]=runif(NT,0.2,1)
+l[1,1]=7.0;l[1,2]=0.05;
+l[2,1]=8.0;l[2,2]=0.05;
+l[3,1]=9.0;l[3,2]=0.05;
+pi[1,1]=0.4;
+pi[2,1]=0.3;
+pi[3,1]=0.2;
 pi[,2]=1-pi[,1]
 return(list(l=l,pi=pi))
 }
@@ -82,12 +88,14 @@ if(length(abc)==2){
 	for(i in 1:2){
 		for(j in 1:2){
 			denom=denom+p.fun(  ( l[a,i]+l[b,j] )  , y[start:end] )   *  pi[a,i]*pi[b,j]
+ #           print(denom)
 		}
 	}
 	for(i in 1:2){
 		for(j in 1:2){
 			tmp=p.fun(  l[a,i]+l[b,j]  , y[start:end] )   *  pi[a,i]*pi[b,j]
 			assign(paste("Eu",i,j,exon,sep=""),tmp/denom, envir = .GlobalEnv)
+#            print(get(paste("Eu",i,j,exon,sep="")))
 		}
 	}
 }
@@ -135,8 +143,8 @@ if(length(abc)==2){
 	tmp=0
 	for(i in 1:2){
 		for(j in 1:2){
-			tmp=tmp+sum( get(paste("Eu",i,j,exon,sep="")) * (log(pi[a,i]*pi[b,j])-l[a,i]-l[b,j]+ y[start:end]*log(l[a,i]+l[b,j]) ) ) 					
-		}
+			tmp=tmp+sum( get(paste("Eu",i,j,exon,sep="")) * (log(pi[a,i]*pi[b,j])-l[a,i]-l[b,j]+ y[start:end]*log(l[a,i]+l[b,j]) ) ) 
+        }
 	}
 }
 if(length(abc)==1){
@@ -146,6 +154,7 @@ if(length(abc)==1){
 		tmp=tmp+sum( get(paste("Eu",i,exon,sep="")) * (log(pi[a,i])-l[a,i]+ y[start:end]*log(l[a,i]) ) ) 					
 	}
 }
+print(tmp);
 return(tmp)
 }
 
@@ -173,6 +182,9 @@ tmp=initialization(range=c(1,max(y)/2))
 l=tmp$l;l
 pi=tmp$pi;pi
 
+print(l)
+print(pi)
+
  l.new=matrix(0,nrow=NT,ncol=2);l.new
 pi.new=matrix(0,nrow=NT,ncol=2);pi.new[,1]=pre;pi.new[,2]=1-pi.new[,1];pi.new
 
@@ -185,6 +197,9 @@ for(i in 1:N){
 		update.Eu(l,pi,abc=trans[[i]], start=start[i], end=end[i],exon=paste("e",i,sep=""),y[i,])
 	}
 }
+
+print("likelihood=")
+print(likelihood(l,pi))
 
 fit=optim( c(l[1,2],l[,1]) , ff, NULL, method = "L-BFGS-B" ,lower=pre   )
 l.new[,2]=fit$par[1]
@@ -202,8 +217,6 @@ if(iter>500){
 	pi=matrix(0,nrow=NT,ncol=2)
 	break
 }
-print("likelihood=")
-print(likelihood(l,pi))
 iter=iter+1
 }
 
