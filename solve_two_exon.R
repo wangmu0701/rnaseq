@@ -5,6 +5,7 @@
 
 # poission distribution
 p.fun=function(lambda,y){
+#    print(exp(-lambda)*lambda^y)
 	return( exp(-lambda)*lambda^y )
 }
 
@@ -18,17 +19,20 @@ if(length(abc)==2){
 	tmp=0
 	for(i in 1:2){
 		for(j in 1:2){
+#            print(get(paste("Eu",i,j,exon,sep="")))
 		tmp=tmp+sum( get(paste("Eu",i,j,exon,sep="")) * (-l[a,i]-l[b,j]+ y[start:end]*log(l[a,i]+l[b,j]) ) )
 		}
 	}
 }
 if(length(abc)==1){
+#printf("never see this")
 	a=abc[1]
 	tmp=0
 	for(i in 1:2){
 		tmp=tmp+sum( get(paste("Eu",i,exon,sep="")) * (-l[a,i]+ y[start:end]*log(l[a,i]) ) )
 	}
 }
+#print(tmp)
 return(-tmp)
 }
 
@@ -71,6 +75,7 @@ return(list(l=l,pi=pi))
 
 # update Eu.  global assignment
 update.Eu=function(l,pi,abc,start,end,exon,y){
+#print(abc)
 if(length(abc)==2){
 	a=abc[1];b=abc[2]
 	denom=0
@@ -87,6 +92,7 @@ if(length(abc)==2){
 	}
 }
 if(length(abc)==1){
+printf("never see this!")
 	a=abc[1]
 	denom=0
 	for(i in 1:2){
@@ -196,7 +202,8 @@ if(iter>500){
 	pi=matrix(0,nrow=NT,ncol=2)
 	break
 }
-
+print("likelihood=")
+print(likelihood(l,pi))
 iter=iter+1
 }
 

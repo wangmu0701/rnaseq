@@ -60,9 +60,6 @@ k1=2000; n=4000
 set.seed(ii)
 
 y=generate.data(intensity=c(l0,l1,l2,l3),proportion=c(p1,p2,p3))
-write.table(y, file='y.dat', row.names=FALSE, col.names=FALSE) 
-write.matrix(y,file = "y.dat", sep = " ", blocksize)
-stop()
 apply(y,1,sum)
 
 par(mfrow=c(1,2),mar=c(2,2,2,2))
@@ -74,6 +71,7 @@ for(i in 1:2){
 
 N=dim(y)[1]; solve=1:3; NT=length(solve); solve; NT; N
 type=c("1-1","2-2");type	
+print(N)
 
 trans=list()
 trans[[1]]=c(1,3); trans[[2]]=c(2,3); trans
@@ -101,7 +99,8 @@ start=c(1,k1+1);  end=c(k1,n) ;start;end
 	print("estimated mixing are")
     print(mixing[[ind]])
 	res[[ii]][[2]]= mixing[[ind]]
-
+    print("likehood")
+    print(loglikelihood[[ind]])
 
 }
 
