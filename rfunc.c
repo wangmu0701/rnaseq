@@ -58,7 +58,7 @@ double pois_fun(double l, double y){
     return (exp(-l)*pow(l,y));
 }
 
-double f_ind(unsigned int e){
+double ff_ind(unsigned int e){
     unsigned int i,j,k;
     unsigned int t0=trans[e][0];
     unsigned int t1=trans[e][1];
@@ -66,24 +66,25 @@ double f_ind(unsigned int e){
     for(i=0;i<2;i++){
         for(j=0;j<2;j++){
             for(k=0;k<elen[e];k++){
-                ret+=eu[e][i][j][k]*(-l[t0][i]-l[t1][i]+y[e][estart[e]+k]*log(l[t0][i])+l[t1][i]);
+                ret+=eu[e][i][j][k]*(-l[t0][i]-l[t1][j]+y[e][estart[e]+k]*log(l[t0][i]+l[t1][j]));
             }
         }
     }
+    printf("ff[%d]=%15.10e\n",e,ret);
     return (-ret);
 }
 
-double f_func(){
+double ff_func(){
     double ret=0;
     unsigned int i,e;
     for(i=0;i<Ntran;i++){l[i][1]=ll;}
     for(e=0;e<Nexon;e++){
-        ret+=f_ind(e);
+        ret+=ff_ind(e);
     }
   return ret;
 }
 
-double p_ind(unsigned int e){
+double pp_ind(unsigned int e){
     unsigned int i,j,k;
     unsigned int t0=trans[e][0];
     unsigned int t1=trans[e][1];
@@ -91,19 +92,19 @@ double p_ind(unsigned int e){
     for(i=0;i<2;i++){
         for(j=0;j<2;j++){
             for(k=0;k<elen[e];k++){
-                ret+=eu[e][i][j][k]*log(p[t0][i]+p[t1][j]);
+                ret+=eu[e][i][j][k]*log(p[t0][i]*p[t1][j]);
             }
         }
     }
     return (-ret);
 }
 
-double p_func(){
+double pp_func(){
     double ret=0;
     unsigned int i,e;
     for(i=0;i<Ntran;i++){l[i][1]=ll;}
     for(e=0;e<Nexon;e++){
-        ret+=p_ind(e);
+        ret+=pp_ind(e);
     }
     return ret;
 }
@@ -192,7 +193,11 @@ int main(){
     readData();
     update_eu();
     double li=likelihood_func();
-    printf("likelihood=%15.5f\n",li);
+    printf("likelihood=%15.10e\n",li);
+    double ff=ff_func();
+    printf("ff=%15.10e\n",ff);
+    double pp=pp_func();
+    printf("pp=%15.10e\n",pp);
     return 0;
 }
 

@@ -1,8 +1,6 @@
 
 
 
-
-
 # poission distribution
 p.fun=function(lambda,y){
 #    print(exp(-lambda)*lambda^y)
@@ -154,7 +152,7 @@ if(length(abc)==1){
 		tmp=tmp+sum( get(paste("Eu",i,exon,sep="")) * (log(pi[a,i])-l[a,i]+ y[start:end]*log(l[a,i]) ) ) 					
 	}
 }
-print(tmp);
+#print(tmp);
 return(tmp)
 }
 
@@ -200,6 +198,10 @@ for(i in 1:N){
 
 print("likelihood=")
 print(likelihood(l,pi))
+print("ff=")
+print(ff(c(l[1,2],l[,1])))
+print("pp=")
+print(pp(as.vector(pi[,1])))
 
 fit=optim( c(l[1,2],l[,1]) , ff, NULL, method = "L-BFGS-B" ,lower=pre   )
 l.new[,2]=fit$par[1]
