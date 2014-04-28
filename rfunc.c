@@ -15,6 +15,14 @@ unsigned int estart[Nexon];
 unsigned int estop[Nexon];
 unsigned int trans[Nexon][2];
 
+//likelihood_func() the likelihood function, line 160 in solve.2.exon.R
+//pp_func() the proportion function
+//ff_func() the intensity funcion
+//update_eu()
+
+
+//readdata from y.dat
+//This data is generated from simulation.2.exon.3.trans.R
 void readData(){
     FILE *fp=fopen("y.dat","r");
     char buf[20000];
@@ -169,18 +177,19 @@ void update_eu_ind(unsigned int e){
             }
         }
     }
-
+/*
     for(i=0;i<2;i++){
         for(j=0;j<2;j++){
             for(k=0;k<10;k++){
                 printf("eu[%d][%d][%d][%d]=%15.5f\n",e,i,j,k,eu[e][i][j][k]);
-//                printf("y=%15.5f, l=%15.5f, posi=%15.5f\n",l[t0][i]+l[t1][j],y[e][estart[e]+k],pois_fun(l[t0][i]+l[t1][j],y[e][estart[e]+k])*p[t0][i]*p[t1][j]);
             }
         }
     }
-//exit(-1);
+*/
     free(sumtmp);
 }
+
+//update.Eu
 void update_eu(){
     unsigned int i,e;
     for(i=0;i<Ntran;i++){l[i][1]=ll;}
@@ -189,6 +198,9 @@ void update_eu(){
     }
 }
 
+//upto line 170 of solve.two.exon.R
+//The any.exon() function, which solve the problem is not implemented
+//That's what we need to do. 
 int main(){
     readData();
     update_eu();
