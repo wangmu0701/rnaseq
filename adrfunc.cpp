@@ -1,14 +1,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <adolc/adolc.h>
+#include <adolc/sparse/sparsedrivers.h>
+#include <adolc/hessian/edge_main.h>
+#include <sys/time.h>
 
 #define Nexon   2
 #define Ntran   3
 #define Nlen    4000    
-double ll;
-double l[Ntran][2];
-double p[Ntran][3];
-double eu[Nexon][Nexon][Nexon][Nlen];
+
+#define tag     1
+
+
+adouble ll;
+adouble l[Ntran][2];
+adouble p[Ntran][2];
+adouble eu[Nexon][Nexon][Nexon][Nlen];
+
+double ll0;
+double l0[Ntran][2];
+double p0[Ntran][2];
+double x[7];
+
 double y[Nexon][Nlen];
 unsigned int elen[Nexon];
 unsigned int estart[Nexon];
@@ -38,11 +52,11 @@ void readData(){
     elen[1]=2000;estart[1]=2000;estop[1]=4000;
 
 //Set a good initial value for start
-    ll=0.05;
-    l[0][0]=7.0;l[1][0]=8.0;l[2][0]=9.0;
-    p[0][0]=0.4;p[0][1]=1.0-p[0][0];
-    p[1][0]=0.3;p[1][1]=1.0-p[1][0];
-    p[2][0]=0.2;p[2][1]=1.0-p[2][0];
+    ll0=0.05;
+    l0[0][0]=7.0;l0[1][0]=8.0;l0[2][0]=9.0;
+    p0[0][0]=0.4;
+    p0[1][0]=0.3;
+    p0[2][0]=0.2;
     fclose(fp);
 /*
     for(i=0;i<Nexon;i++){
@@ -54,10 +68,11 @@ void readData(){
 */
 }
 
-double pois_fun(double l, double y){
+adouble pois_fun(adouble l, adouble y){
     return (exp(-l)*pow(l,y));
 }
 
+/*
 double ff_ind(unsigned int e){
     unsigned int i,j,k;
     unsigned int t0=trans[e][0];
@@ -108,12 +123,13 @@ double pp_func(){
     }
     return ret;
 }
+*/
 
-double likelihood_ind(unsigned int e){
+adouble likelihood_ind(unsigned int e){
     unsigned int i,j,k;
     unsigned int t0=trans[e][0];
     unsigned int t1=trans[e][1];
-    double ret=0;
+    adouble ret=0;
     for(i=0;i<2;i++){
         for(j=0;j<2;j++){
             for(k=0;k<elen[e];k++){
@@ -121,6 +137,7 @@ double likelihood_ind(unsigned int e){
             }
         }
     }
+/*
     for(i=0;i<2;i++){
         for(j=0;j<2;j++){
             for(k=0;k<10;k++){
@@ -129,11 +146,12 @@ double likelihood_ind(unsigned int e){
         }
     }
     printf("li[%d]=%15.5f\n",e,ret);
+*/
     return ret;
 }
 
-double likelihood_func(){
-    double ret=0;
+adouble likelihood_func(){
+    adouble ret=0;
     unsigned int i,e;
     for(i=0;i<Ntran;i++){l[i][1]=ll;}
     for(e=0;e<Nexon;e++){
@@ -145,7 +163,7 @@ double likelihood_func(){
 void update_eu_ind(unsigned int e){
     unsigned int t0=trans[e][0];
     unsigned int t1=trans[e][1];
-    double *sumtmp=(double*)malloc(sizeof(double)*elen[e]);
+    adouble *sumtmp=new adouble[elen[e]];
     unsigned int i,j,k;
 
 //Initial to 0
@@ -157,11 +175,13 @@ void update_eu_ind(unsigned int e){
         for(j=0;j<2;j++){
             for(k=0;k<elen[e];k++){
                 sumtmp[k]+=pois_fun(l[t0][i]+l[t1][j],y[e][estart[e]+k])*p[t0][i]*p[t1][j];
+//                printf("sum[%d]=%15.5f\n",k,sumtmp[k].getValue());
             }
         }
     }
+//    exit(-1);
 //Store averages
-    double tmp=0;
+    adouble tmp=0;
     for(i=0;i<2;i++){
         for(j=0;j<2;j++){
             for(k=0;k<elen[e];k++){
@@ -174,14 +194,16 @@ void update_eu_ind(unsigned int e){
     for(i=0;i<2;i++){
         for(j=0;j<2;j++){
             for(k=0;k<10;k++){
-                printf("eu[%d][%d][%d][%d]=%15.5f\n",e,i,j,k,eu[e][i][j][k]);
+//                printf("eu[%d][%d][%d][%d]=%15.5f\n",e,i,j,k,eu[e][i][j][k].getValue());
 //                printf("y=%15.5f, l=%15.5f, posi=%15.5f\n",l[t0][i]+l[t1][j],y[e][estart[e]+k],pois_fun(l[t0][i]+l[t1][j],y[e][estart[e]+k])*p[t0][i]*p[t1][j]);
             }
         }
     }
+
 //exit(-1);
-    free(sumtmp);
+    delete[] sumtmp;
 }
+
 void update_eu(){
     unsigned int i,e;
     for(i=0;i<Ntran;i++){l[i][1]=ll;}
@@ -191,14 +213,75 @@ void update_eu(){
 }
 
 int main(){
+    struct timeval tv1, tv2;
+
     readData();
+
+    trace_on(tag);
+    int i,j;
+    int n=7;
+
+    ll<<=ll0;
+    x[0]=ll0;
+    for(i=0;i<3;i++){
+        l[i][0]<<=l0[i][0];
+        x[1+i]=l0[i][0];
+    }
+    for(i=0;i<3;i++){
+        p[i][0]<<=p0[i][0];
+        x[4+i]=p0[i][0];
+    }
+    for(i=0;i<3;i++){
+        p[i][1]=1.0-p[i][0];
+    }
+    printf("ll=%15.5f\n",ll.getValue());
+    printf("l[0][0]=%15.5f\n",l[0][0].getValue());
+    printf("l[1][0]=%15.5f\n",l[1][0].getValue());
+    printf("l[2][0]=%15.5f\n",l[2][0].getValue());
+    printf("p[0][0]=%15.5f\n",p[0][0].getValue());
+    printf("p[1][0]=%15.5f\n",p[1][0].getValue());
+    printf("p[2][0]=%15.5f\n",p[2][0].getValue());
+
     update_eu();
-    double li=likelihood_func();
-    printf("likelihood=%15.10e\n",li);
-    double ff=ff_func();
-    printf("ff=%15.10e\n",ff);
-    double pp=pp_func();
-    printf("pp=%15.10e\n",pp);
+    adouble li=likelihood_func();
+    double li0;
+    li >>= li0;
+    trace_off();
+
+    printf("likelihood=%15.10e\n",li0);
+
+    double **H;
+    H=myalloc2(n,n);
+    gettimeofday(&tv1,NULL);
+    hessian(tag,n,x,H);
+    gettimeofday(&tv2,NULL);
+    printf("Computing the full hessian cost %10.6f seconds\n",(tv2.tv_sec-tv1.tv_sec)+(double)(tv2.tv_usec-tv1.tv_usec)/1000000);
+    for(i=0;i<n;i++){
+        for(j=0;j<n;j++){
+            printf("H[%d][%d]=%10.5f",i,j,H[i][j]);
+        }
+        printf("\n");
+    }
+    myfree2(H);
+    unsigned int *rind=NULL;
+    unsigned int *cind=NULL;
+    double *values=NULL;
+    int nnz;
+    int options[2]={1,0};
+    gettimeofday(&tv1,NULL);
+    sparse_hess(tag,n,0,x,&nnz,&rind,&cind,&values,options);
+    gettimeofday(&tv2,NULL);
+    printf("Sparse Hessian: edge pushing cost %10.6f seconds\n",(tv2.tv_sec-tv1.tv_sec)+(double)(tv2.tv_usec-tv1.tv_usec)/1000000);
+    for(i=0;i<nnz;i++){
+        printf("EH[%i][%i]=%10.5f\n",rind[i],cind[i],values[i]);
+    }
+//    double ff=ff_func();
+//    printf("ff=%15.10e\n",ff);
+//    double pp=pp_func();
+//    printf("pp=%15.10e\n",pp);
+    free(rind);rind=NULL;
+    free(cind);cind=NULL;
+    free(values);values=NULL;
     return 0;
 }
 
