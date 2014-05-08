@@ -53,13 +53,14 @@ l3=12
 p1=0.3
 p2=0.2
 p3=0.1
-k1=2000; n=4000
+k1=5000; n=10000
 
 
 #simulate 1  non-junction 
 set.seed(ii)
 
 y=generate.data(intensity=c(l0,l1,l2,l3),proportion=c(p1,p2,p3))
+#write.table(y, file="y0.dat", row.names=FALSE, col.names=FALSE)
 apply(y,1,sum)
 
 par(mfrow=c(1,2),mar=c(2,2,2,2))

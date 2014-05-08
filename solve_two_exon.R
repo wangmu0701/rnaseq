@@ -180,8 +180,8 @@ tmp=initialization(range=c(1,max(y)/2))
 l=tmp$l;l
 pi=tmp$pi;pi
 
-print(l)
-print(pi)
+#print(l)
+#print(pi)
 
  l.new=matrix(0,nrow=NT,ncol=2);l.new
 pi.new=matrix(0,nrow=NT,ncol=2);pi.new[,1]=pre;pi.new[,2]=1-pi.new[,1];pi.new
@@ -196,12 +196,12 @@ for(i in 1:N){
 	}
 }
 
-print("likelihood=")
-print(likelihood(l,pi))
-print("ff=")
-print(ff(c(l[1,2],l[,1])))
-print("pp=")
-print(pp(as.vector(pi[,1])))
+#print("likelihood=")
+#print(likelihood(l,pi))
+#print("ff=")
+#print(ff(c(l[1,2],l[,1])))
+#print("pp=")
+#print(pp(as.vector(pi[,1])))
 
 fit=optim( c(l[1,2],l[,1]) , ff, NULL, method = "L-BFGS-B" ,lower=pre   )
 l.new[,2]=fit$par[1]

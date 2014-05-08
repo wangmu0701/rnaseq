@@ -12,11 +12,14 @@
 
 #define tag     1
 
+#define pois_fun(l,y)   (exp(-(l))*pow((l),(y)))
+
 
 adouble ll;
 adouble l[Ntran][2];
 adouble p[Ntran][2];
 adouble eu[Nexon][Nexon][Nexon][Nlen];
+adouble sumtmp[Nlen];
 
 double ll0;
 double l0[Ntran][2];
@@ -68,147 +71,118 @@ void readData(){
 */
 }
 
-adouble pois_fun(adouble l, adouble y){
-    return (exp(-l)*pow(l,y));
-}
+//adouble pois_fun(adouble l, adouble y){
+//    return (exp(-l)*pow(l,y));
+//}
 
-/*
-double ff_ind(unsigned int e){
-    unsigned int i,j,k;
-    unsigned int t0=trans[e][0];
-    unsigned int t1=trans[e][1];
-    double ret=0;
-    for(i=0;i<2;i++){
-        for(j=0;j<2;j++){
-            for(k=0;k<elen[e];k++){
-                ret+=eu[e][i][j][k]*(-l[t0][i]-l[t1][j]+y[e][estart[e]+k]*log(l[t0][i]+l[t1][j]));
-            }
-        }
-    }
-    printf("ff[%d]=%15.10e\n",e,ret);
-    return (-ret);
-}
 
-double ff_func(){
-    double ret=0;
-    unsigned int i,e;
+
+adouble ff_func(){
+    adouble ret=0;
+    unsigned int i,e,j,k;
+    unsigned int t0;
+    unsigned int t1;
+    adouble tmp=0;
     for(i=0;i<Ntran;i++){l[i][1]=ll;}
     for(e=0;e<Nexon;e++){
-        ret+=ff_ind(e);
+        t0=trans[e][0];
+        t1=trans[e][1];
+        tmp=0;
+        for(i=0;i<2;i++){
+            for(j=0;j<2;j++){
+                for(k=0;k<elen[e];k++){
+                tmp+=eu[e][i][j][k]*(-l[t0][i]-l[t1][j]+y[e][estart[e]+k]*log(l[t0][i]+l[t1][j]));
+                }
+            }
+        }
+        ret-=tmp;
+    printf("ff[%d]=%15.10e\n",e,ret.getValue());
     }
   return ret;
 }
 
-double pp_ind(unsigned int e){
-    unsigned int i,j,k;
-    unsigned int t0=trans[e][0];
-    unsigned int t1=trans[e][1];
-    double ret=0;
-    for(i=0;i<2;i++){
-        for(j=0;j<2;j++){
-            for(k=0;k<elen[e];k++){
-                ret+=eu[e][i][j][k]*log(p[t0][i]*p[t1][j]);
-            }
-        }
-    }
-    return (-ret);
-}
 
-double pp_func(){
-    double ret=0;
-    unsigned int i,e;
+adouble pp_func(){
+    adouble ret=0;
+    unsigned int i,j,k,e;
+    unsigned int t0;
+    unsigned int t1;
+    adouble tmp=0;
     for(i=0;i<Ntran;i++){l[i][1]=ll;}
     for(e=0;e<Nexon;e++){
-        ret+=pp_ind(e);
+        t0=trans[e][0];
+        t1=trans[e][1];
+        tmp=0;
+        for(i=0;i<2;i++){
+            for(j=0;j<2;j++){
+                for(k=0;k<elen[e];k++){
+                    tmp+=eu[e][i][j][k]*log(p[t0][i]*p[t1][j]);
+                }
+            }
+        }
+        ret-=tmp;
     }
     return ret;
 }
-*/
 
-adouble likelihood_ind(unsigned int e){
-    unsigned int i,j,k;
-    unsigned int t0=trans[e][0];
-    unsigned int t1=trans[e][1];
-    adouble ret=0;
-    for(i=0;i<2;i++){
-        for(j=0;j<2;j++){
-            for(k=0;k<elen[e];k++){
-                ret+=eu[e][i][j][k]*( log(p[t0][i]*p[t1][j])-l[t0][i]-l[t1][j]+y[e][estart[e]+k]*log(l[t0][i]+l[t1][j])  );
-            }
-        }
-    }
-/*
-    for(i=0;i<2;i++){
-        for(j=0;j<2;j++){
-            for(k=0;k<10;k++){
-                printf("li[%d][%d][%d][%d]=%15.5f\n",e,i,j,k, eu[e][i][j][k]*( log(p[t0][i]*p[t1][j])-l[t0][i]-l[t1][j]+y[e][estart[e]+k]*log(l[t0][i]+l[t1][j])));
-            }
-        }
-    }
-    printf("li[%d]=%15.5f\n",e,ret);
-*/
-    return ret;
-}
 
 adouble likelihood_func(){
     adouble ret=0;
-    unsigned int i,e;
+    unsigned int i,j,k,e;
+    unsigned int t0;
+    unsigned int t1;
+    adouble tmp=0;
     for(i=0;i<Ntran;i++){l[i][1]=ll;}
     for(e=0;e<Nexon;e++){
-        ret+=likelihood_ind(e);
+        t0=trans[e][0];
+        t1=trans[e][1];
+        tmp=0;
+        for(i=0;i<2;i++){
+            for(j=0;j<2;j++){
+                for(k=0;k<elen[e];k++){
+                    tmp+=eu[e][i][j][k]*( log(p[t0][i]*p[t1][j])-l[t0][i]-l[t1][j]+y[e][estart[e]+k]*log(l[t0][i]+l[t1][j])  );
+                }
+            }
+        }
+        ret+=tmp;
     }
     return ret;
 }
 
-void update_eu_ind(unsigned int e){
-    unsigned int t0=trans[e][0];
-    unsigned int t1=trans[e][1];
-    adouble *sumtmp=new adouble[elen[e]];
-    unsigned int i,j,k;
-
-//Initial to 0
-    for(i=0;i<elen[e];i++){
-        sumtmp[i]=0;
-    }
-//Compute sum temporary
-    for(i=0;i<2;i++){
-        for(j=0;j<2;j++){
-            for(k=0;k<elen[e];k++){
-                sumtmp[k]+=pois_fun(l[t0][i]+l[t1][j],y[e][estart[e]+k])*p[t0][i]*p[t1][j];
-//                printf("sum[%d]=%15.5f\n",k,sumtmp[k].getValue());
-            }
-        }
-    }
-//    exit(-1);
-//Store averages
-    adouble tmp=0;
-    for(i=0;i<2;i++){
-        for(j=0;j<2;j++){
-            for(k=0;k<elen[e];k++){
-                tmp=pois_fun(l[t0][i]+l[t1][j],y[e][estart[e]+k])*p[t0][i]*p[t1][j];
-                eu[e][i][j][k]=tmp/sumtmp[k];
-            }
-        }
-    }
-
-    for(i=0;i<2;i++){
-        for(j=0;j<2;j++){
-            for(k=0;k<10;k++){
-//                printf("eu[%d][%d][%d][%d]=%15.5f\n",e,i,j,k,eu[e][i][j][k].getValue());
-//                printf("y=%15.5f, l=%15.5f, posi=%15.5f\n",l[t0][i]+l[t1][j],y[e][estart[e]+k],pois_fun(l[t0][i]+l[t1][j],y[e][estart[e]+k])*p[t0][i]*p[t1][j]);
-            }
-        }
-    }
-
-//exit(-1);
-    delete[] sumtmp;
-}
-
 void update_eu(){
-    unsigned int i,e;
+    unsigned int i,j,k,e;
+    unsigned int t0;
+    unsigned int t1;
     for(i=0;i<Ntran;i++){l[i][1]=ll;}
     for(e=0;e<Nexon;e++){
-        update_eu_ind(e);
+        t0=trans[e][0];
+        t1=trans[e][1];
+        
+        //Initial to 0
+        for(i=0;i<elen[e];i++){
+            sumtmp[i]=0;
+        }
+        //Compute sum temporary
+        for(i=0;i<2;i++){
+            for(j=0;j<2;j++){
+                for(k=0;k<elen[e];k++){
+                    sumtmp[k]+=pois_fun(l[t0][i]+l[t1][j],y[e][estart[e]+k])*p[t0][i]*p[t1][j];
+                    //                printf("sum[%d]=%15.5f\n",k,sumtmp[k].getValue());
+                }
+            }
+        }
+        //    exit(-1);
+        //Store averages
+        adouble tmp=0;
+        for(i=0;i<2;i++){
+            for(j=0;j<2;j++){
+                for(k=0;k<elen[e];k++){
+                    tmp=pois_fun(l[t0][i]+l[t1][j],y[e][estart[e]+k])*p[t0][i]*p[t1][j];
+                    eu[e][i][j][k]=tmp/sumtmp[k];
+                }
+            }
+        }
+        
     }
 }
 
@@ -243,12 +217,23 @@ int main(){
     printf("p[2][0]=%15.5f\n",p[2][0].getValue());
 
     update_eu();
-    adouble li=likelihood_func();
-    double li0;
-    li >>= li0;
+//    adouble li=likelihood_func();
+//    double li0;
+//    li >>= li0;
+
+//    adouble ff=ff_func();
+//    double ff0;
+//    ff >>= ff0;
+
+    adouble pp=pp_func();
+    double pp0;
+    pp >>= pp0;
+
     trace_off();
 
-    printf("likelihood=%15.10e\n",li0);
+//    printf("likelihood=%15.10e\n",li0);
+//    printf("ff_func=%15.10e\n",ff0);
+    printf("pp_func=%15.10e\n",pp0);
 
     double **H;
     H=myalloc2(n,n);
@@ -267,18 +252,15 @@ int main(){
     unsigned int *cind=NULL;
     double *values=NULL;
     int nnz;
-    int options[2]={1,0};
+    int options[2]={1,1};
     gettimeofday(&tv1,NULL);
-    sparse_hess(tag,n,0,x,&nnz,&rind,&cind,&values,options);
+    edge_hess(tag,1,n,x,&nnz,&rind,&cind,&values,options);
     gettimeofday(&tv2,NULL);
     printf("Sparse Hessian: edge pushing cost %10.6f seconds\n",(tv2.tv_sec-tv1.tv_sec)+(double)(tv2.tv_usec-tv1.tv_usec)/1000000);
     for(i=0;i<nnz;i++){
         printf("EH[%i][%i]=%10.5f\n",rind[i],cind[i],values[i]);
     }
-//    double ff=ff_func();
-//    printf("ff=%15.10e\n",ff);
-//    double pp=pp_func();
-//    printf("pp=%15.10e\n",pp);
+
     free(rind);rind=NULL;
     free(cind);cind=NULL;
     free(values);values=NULL;
