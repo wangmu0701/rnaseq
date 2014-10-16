@@ -29,15 +29,14 @@ OBJS =  cpp_example.o \
 
 # Definitions for ADOL-C
 # CHANGE THIS TO YOUR ADOL-C BASE DIRECTORY
-IPOPTPATH = $(HOME)/ipopt
-ADPATH = $(HOME)/adolc_edge/include
-ADLIBDIR = $(HOME)/adolc_edge/lib
-
+IPOPTPATH = $(HOME)/packages/ipopt
+ADPATH = $(HOME)/packages/adolc_edge
+ADINCL = $(ADPATH)/include
 # CHANGEME: Additional libraries
-ADDLIBS =  -L$(ADLIBDIR) -ladolc -L$(HOME)/packages/ColPack/lib/ -lColPack
+ADDLIBS =  -L$(ADPATH)/lib64 -ladolc -L$(HOME)/packages/ColPack/lib/ -lColPack
 
 # CHANGEME: Additional flags for compilation (e.g., include flags)
-ADDINCFLAGS = -I$(ADPATH)  
+ADDINCFLAGS = -I$(ADINCL)  
 
 ##########################################################################
 #  Usually, you don't have to change anything below.  Note that if you   #
@@ -45,7 +44,7 @@ ADDINCFLAGS = -I$(ADPATH)
 ##########################################################################
 
 # C++ Compiler command
-CXX = g++
+CXX = /usr/local/bin/g++
 
 # C++ Compiler options
 CXXFLAGS = -O3 -pipe -DNDEBUG -Wparentheses -Wreturn-type -Wcast-qual -Wall -Wpointer-arith -Wwrite-strings -Wconversion -Wno-unknown-pragmas -Wno-long-long   -DIPOPT_BUILD
@@ -54,20 +53,12 @@ CXXFLAGS = -O3 -pipe -DNDEBUG -Wparentheses -Wreturn-type -Wcast-qual -Wall -Wpo
 CXXLINKFLAGS = 
 
 # Include directories (we use the CYGPATH_W variables to allow compilation with Windows compilers)
-INCL = `PKG_CONFIG_PATH=$(IPOPTPATH)/lib64/pkgconfig:$(IPOPTPATH)/lib/pkgconfig:$(IPOPTPATH)/share/pkgconfig: pkg-config --cflags ipopt` $(ADDINCFLAGS)
-#INCL = -I`$(CYGPATH_W) /home/zsdfe/Downloads/Ipopt-3.11.9/Ipopt/include/coin`  $(ADDINCFLAGS)
+#INCL = `PKG_CONFIG_PATH=$(IPOPTPATH)/lib64/pkgconfig:$(IPOPTPATH)/lib/pkgconfig:$(IPOPTPATH)/share/pkgconfig: pkg-config --cflags ipopt` $(ADDINCFLAGS)
+INCL = -I`$(CYGPATH_W) $(IPOPTPATH)/include/coin` -I$(IPOPTPATH)/include/coin/ThirdParty  $(ADDINCFLAGS)
 
 # Linker flags
-LIBS = `PKG_CONFIG_PATH=$(IPOPTPATH)/lib64/pkgconfig:$(IPOPTPATH)/lib/pkgconfig:$(IPOPTPATH)/share/pkgconfig: pkg-config --libs ipopt`
-
-
-# Include directories (we use the CYGPATH_W variables to allow compilation with Windows compilers)
-#INCL = `PKG_CONFIG_PATH=/Users/muwang/packages/ipopt/lib64/pkgconfig:/Users/muwang/packages/ipopt/lib/pkgconfig:/Users/muwang/packages/ipopt/share/pkgconfig:  --cflags ipopt` $(ADDINCFLAGS)
-#iINCL = -I$(IPOPTPATH)/include/coin  -I$(IPOPTPATH)/include/coin/ThirdParty   $(ADDINCFLAGS)
-
-# Linker flags
-#LIBS = -L$(IPOPTPATH)/lib -lipopt
-#LIBS = -L$(IPOPTPATH)/lib -lipopt -lcoinhsl -lgfortran -lSystem -lquadmath -lm  -llapack -lblas -lm  -ldl
+#LIBS = `PKG_CONFIG_PATH=$(IPOPTPATH)/lib64/pkgconfig:$(IPOPTPATH)/lib/pkgconfig:$(IPOPTPATH)/share/pkgconfig: pkg-config --libs ipopt`
+LIBS = -L$(IPOPTPATH)/lib -lipopt -L$(IPOPTPATH)/lib -lcoinhsl -L/usr/local/gfortran/lib/gcc/x86_64-apple-darwin13/4.9.0 -L/usr/local/gfortran/lib/gcc/x86_64-apple-darwin13/4.9.0/../../.. -lgfortran -lSystem -lquadmath -lm -llapack -lblas -ldl
 
 # The following is necessary under cygwin, if native compilers are used
 CYGPATH_W = echo

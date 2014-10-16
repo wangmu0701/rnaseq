@@ -3,15 +3,16 @@
 # The full COPYRIGHT notice can be found in the top      #
 # level directory of the Rapsodia distribution           #
 ##########################################################
-include ../../../Downloads/Rapsodia/MakeDefs.mk
-include ../../../Downloads/Rapsodia/MakeRules.mk
+RAPSODIAHOME = ../../../packages/Rapsodia
+include $(RAPSODIAHOME)/MakeDefs.mk
+include $(RAPSODIAHOME)/MakeRules.mk
 
 default: driver
 	./$^
 
 GEN_DIR=RALib
 
-RA_EXTRAS=../../../Downloads/Rapsodia/hotCpp
+RA_EXTRAS=$(RAPSODIAHOME)/hotCpp
 IPATH+=-I$(GEN_DIR) -I$(RA_EXTRAS)
 
 OBJS= \
@@ -23,7 +24,7 @@ driver:  $(OBJS) $(GEN_DIR)/libRapsodia.a
 	$(CXX) $(CXXFLAGS) $(IPATH) -o $@ $^
 
 $(GEN_DIR)/libRapsodia.a: FORCE
-	../../../Downloads/Rapsodia/Generator/generate.py -d 28 -o 2 -c $(GEN_DIR)
+	$(RAPSODIAHOME)/Generator/generate.py -d 28 -o 2 -c $(GEN_DIR)
 	cd $(GEN_DIR) && $(MAKE)
 
 FORCE:

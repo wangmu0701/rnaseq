@@ -324,17 +324,17 @@ bool MyADOLC_NLP::eval_h(Index n, const Number* x, bool new_x,
     hessian(tag_L,n+m+1,x_lam,Hess);
 
     Index idx = 0;
-/*
+
     for(Index i = 0; i<n ; i++)
       {
 	for(Index j = 0; j<=i ; j++)
 	  {
 	    values[idx++] = Hess[i][j];
-printf("H[%d][%d]=%.10f\n", i, j, Hess[i][j]);
+//printf("H[%d][%d]=%.10f\n", i, j, Hess[i][j]);
 	  }
       }
+
   }
-*/
   return true;
 }
 

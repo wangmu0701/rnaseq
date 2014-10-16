@@ -300,17 +300,16 @@ bool MyADOLC_NLP::eval_h(Index n, const Number* x, bool new_x,
       }
     }
     Index idx = 0;
-/*
+
     for(Index i = 0; i<n ; i++)
       {
 	for(Index j = 0; j<=i ; j++)
 	  {
 	    values[idx++] = Hess[i][j]*obj_factor;
-printf("H[%d][%d]=%.10f\n", i, j, Hess[i][j]*obj_factor);
+//printf("H[%d][%d]=%.10f\n", i, j, Hess[i][j]*obj_factor);
 	  }
       }
   }
-*/
   return true;
 }
 
