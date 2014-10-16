@@ -188,7 +188,7 @@ void update_eu(){
 
 int main(){
     struct timeval tv1, tv2;
-
+    double time_elapsed = 0;
     readData();
 
     trace_on(tag);
@@ -216,24 +216,28 @@ int main(){
     printf("p[1][0]=%15.5f\n",p[1][0].getValue());
     printf("p[2][0]=%15.5f\n",p[2][0].getValue());
 
+    gettimeofday(&tv1, NULL);
     update_eu();
-//    adouble li=likelihood_func();
-//    double li0;
-//    li >>= li0;
+    adouble li=likelihood_func();
+    gettimeofday(&tv2, NULL);
+    time_elapsed = (tv2.tv_sec - tv1.tv_sec) +
+                   (double)(tv2.tv_usec - tv1.tv_usec) / 1000000;
+    double li0;
+    li >>= li0;
 
 //    adouble ff=ff_func();
 //    double ff0;
 //    ff >>= ff0;
 
-    adouble pp=pp_func();
-    double pp0;
-    pp >>= pp0;
+//    adouble pp=pp_func();
+//    double pp0;
+//    pp >>= pp0;
 
     trace_off();
 
-//    printf("likelihood=%15.10e\n",li0);
+    printf("likelihood=%.10e, time elapsed = %.10f",li0, time_elapsed);
 //    printf("ff_func=%15.10e\n",ff0);
-    printf("pp_func=%15.10e\n",pp0);
+//    printf("pp_func=%15.10e\n",pp0);
 
     double **H;
     H=myalloc2(n,n);
@@ -252,7 +256,7 @@ int main(){
     unsigned int *cind=NULL;
     double *values=NULL;
     int nnz;
-    int options[2]={1,1};
+    int options[2]={0,1};
     gettimeofday(&tv1,NULL);
     edge_hess(tag,1,n,x,&nnz,&rind,&cind,&values,options);
     gettimeofday(&tv2,NULL);

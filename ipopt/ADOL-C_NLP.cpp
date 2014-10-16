@@ -85,10 +85,10 @@ bool MyADOLC_NLP::get_nlp_info(Index& n, Index& m, Index& nnz_jac_g,
 {
   n = 7;
 
-  m = 7;
+  m = 0;
 
   // in this example the jacobian is dense. Hence, it contains n*m nonzeros
-  nnz_jac_g = n*m;
+  nnz_jac_g = 0;
 
   // the hessian is also dense and has n*n total nonzeros, but we
   // only need the lower left corner (since it is symmetric)
@@ -105,20 +105,14 @@ bool MyADOLC_NLP::get_nlp_info(Index& n, Index& m, Index& nnz_jac_g,
 bool MyADOLC_NLP::get_bounds_info(Index n, Number* x_l, Number* x_u,
                             Index m, Number* g_l, Number* g_u)
 {
-  // none of the variables have bounds
-  for (Index i=0; i<n; i++) {
-    x_l[i] = 0;
-    x_u[i] =  1e20;
-  }
-
-  // Set the bounds for the constraints
+  // Set the bounds for the variables
   for (Index i=0; i<4; i++) {
-    g_l[i] = -1e20;
-    g_u[i] = 1e20;
+    x_l[i] = 0;
+    x_u[i] = 1e20;
   }
-  for (Index i=4; i<m; i++) {
-    g_l[i] = 0.0;
-    g_u[i] = 1.0;
+  for (Index i=4; i<n; i++) {
+    x_l[i] = 0.0;
+    x_u[i] = 1.0;
   }
   return true;
 }
@@ -226,16 +220,6 @@ template<class T> bool  MyADOLC_NLP::eval_obj(Index n, const T *x, T& obj_value)
 
 template<class T> bool  MyADOLC_NLP::eval_constraints(Index n, const T *x, Index m, T* g)
 {
-    for (Index i=0; i<m; i++){
-        g[i]=x[i];
-    }
-/*
-  for (Index i=0; i<m; i++) {
-    g[i] = 3.*pow(x[i+1],3.) + 2.*x[i+2] - 5.
-           + sin(x[i+1]-x[i+2])*sin(x[i+1]+x[i+2]) + 4.*x[i+1]
-           - x[i]*exp(x[i]-x[i+1]) - 3.;
-  }
-*/
   return true;
 }
 
@@ -259,7 +243,11 @@ bool MyADOLC_NLP::eval_grad_f(Index n, const Number* x, bool new_x, Number* grad
 {
 
   gradient(tag_f,n,x,grad_f);
-
+/*
+  for(Index i=0; i<n; i++){
+    printf("J[%d]=%.10f\n", i, grad_f[i]);
+  }
+*/
   return true;
 }
 
@@ -329,23 +317,24 @@ bool MyADOLC_NLP::eval_h(Index n, const Number* x, bool new_x,
 
     for(Index i = 0; i<n ; i++)
       x_lam[i] = x[i];
-    for(Index i = 0; i<m ; i++)
+    for(Index i = 0; i<m; i++)
       x_lam[n+i] = lambda[i];
     x_lam[n+m] = obj_factor;
 
     hessian(tag_L,n+m+1,x_lam,Hess);
 
     Index idx = 0;
-
+/*
     for(Index i = 0; i<n ; i++)
       {
 	for(Index j = 0; j<=i ; j++)
 	  {
 	    values[idx++] = Hess[i][j];
+printf("H[%d][%d]=%.10f\n", i, j, Hess[i][j]);
 	  }
       }
   }
-
+*/
   return true;
 }
 
@@ -437,14 +426,11 @@ void MyADOLC_NLP::generate_tapes(Index n, Index m)
     for(Index i=0;i<m;i++)
       lam[i] <<= 1.0;
     sig <<= 1.0;
-
     eval_obj(n,xa,obj_value);
-
+    
     obj_value *= sig;
-    eval_constraints(n,xa,m,g);
- 
-    for(Index i=0;i<m;i++)
-      obj_value += g[i]*lam[i];
+    for(Index i=0; i<m; i++)
+      obj_value += g[i] * lam[i];
 
     obj_value >>= dummy;
 

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <sys/time.h>
 
 #define Nexon   2
 #define Ntran   3
@@ -78,7 +79,7 @@ double ff_ind(unsigned int e){
             }
         }
     }
-    printf("ff[%d]=%15.10e\n",e,ret);
+//    printf("ff[%d]=%15.10e\n",e,ret);
     return (-ret);
 }
 
@@ -129,6 +130,7 @@ double likelihood_ind(unsigned int e){
             }
         }
     }
+/*
     for(i=0;i<2;i++){
         for(j=0;j<2;j++){
             for(k=0;k<10;k++){
@@ -137,6 +139,7 @@ double likelihood_ind(unsigned int e){
         }
     }
     printf("li[%d]=%15.5f\n",e,ret);
+*/
     return ret;
 }
 
@@ -204,9 +207,15 @@ void update_eu(){
 //That's what we need to do. 
 int main(){
     readData();
+    struct timeval tv1, tv2;
+    double time_elapsed = 0;
+    gettimeofday(&tv1, NULL);
     update_eu();
     double li=likelihood_func();
-    printf("likelihood=%15.10e\n",li);
+    gettimeofday(&tv2, NULL);
+    time_elapsed = (tv2.tv_sec - tv1.tv_sec) +
+                   (double)(tv2.tv_usec - tv1.tv_usec) / 1000000;
+    printf("likelihood=%.10e, time elapsed = %.10f\n", li, time_elapsed);
     double ff=ff_func();
     printf("ff=%15.10e\n",ff);
     double pp=pp_func();
